@@ -11,7 +11,7 @@ export function AppLayout({ children, requireRole }) {
     if (requireRole && role !== requireRole) {
       const map = {
         citizen: "/app/citizen",
-        nagarnigam: "/app/nigam",
+        nigam: "/app/nigam",
         driver: "/app/driver",
         admin: "/app/admin",
       };

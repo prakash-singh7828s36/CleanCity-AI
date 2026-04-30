@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+﻿import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import {
@@ -20,9 +20,11 @@ import { Label } from "../components/ui/label";
 import { Select, SelectItem } from "../components/ui/select";
 import { useRole } from "../contexts/RoleContext";
 
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+
 const roleIcons = {
   citizen: Users,
-  nagarnigam: Building2,
+  nigam: Building2,
   driver: Truck,
   admin: Shield,
 };
@@ -31,21 +33,56 @@ const Register = () => {
   const nav = useNavigate();
   const { setRole } = useRole();
 
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [selRole, setSelRole] = useState("citizen");
+  const [city, setCity] = useState("lucknow");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const routeMap = {
+    citizen: "/app/citizen",
+    nigam: "/app/nigam",
+    driver: "/app/driver",
+    admin: "/app/admin",
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-    setRole(selRole);
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role: selRole,
+          city,
+        }),
+      });
 
-    const map = {
-      citizen: "/app/citizen",
-      nagarnigam: "/app/nigam",
-      driver: "/app/driver",
-      admin: "/app/admin",
-    };
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || "Registration failed. Please try again.");
+        return;
+      }
 
-    nav(map[selRole]);
+      const { token, user } = data;
+      localStorage.setItem("cleanCityToken", token);
+      localStorage.setItem("cleanCityUser", JSON.stringify(user));
+      localStorage.setItem("cleanCityRole", user.role);
+      setRole(user.role);
+      nav(routeMap[user.role] || "/app/citizen");
+    } catch (err) {
+      setError("Unable to register. Please check your connection.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -67,8 +104,6 @@ const Register = () => {
           <h1 className="text-3xl font-bold mb-4">Create account</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* 🔥 ROLE SELECTION (FIXED + ADVANCED) */}
             <div>
               <Label>Select Role</Label>
 
@@ -90,16 +125,12 @@ const Register = () => {
                     >
                       <Icon
                         className={`w-5 h-5 ${
-                          active
-                            ? "text-primary"
-                            : "text-muted-foreground"
+                          active ? "text-primary" : "text-muted-foreground"
                         }`}
                       />
 
                       <span className="capitalize">
-                        {r === "nagarnigam"
-                          ? "Nagar Nigam"
-                          : r}
+                        {r === "nigam" ? "Nagar Nigam" : r}
                       </span>
                     </button>
                   );
@@ -107,34 +138,51 @@ const Register = () => {
               </div>
             </div>
 
-            {/* inputs */}
             <div>
               <Label>Name</Label>
-              <Input placeholder="Your name" required />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                required
+              />
             </div>
 
             <div>
               <Label>Email</Label>
-              <Input type="email" placeholder="you@city.gov" required />
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@city.gov"
+                required
+              />
             </div>
 
             <div>
               <Label>Password</Label>
-              <Input type="password" placeholder="••••••••" required />
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
             </div>
 
-            {/* select */}
             <div>
               <Label>City</Label>
-              <Select defaultValue="lucknow">
+              <Select value={city} onValueChange={(value) => setCity(value)}>
                 <SelectItem value="lucknow">Lucknow</SelectItem>
                 <SelectItem value="delhi">Delhi</SelectItem>
               </Select>
             </div>
 
-            {/* button */}
-            <Button type="submit" className="w-full mt-2">
-              Create account <ArrowRight className="ml-2 w-4 h-4" />
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            <Button type="submit" disabled={isLoading} className="w-full mt-2">
+              {isLoading ? "Creating account..." : "Create account"}
+              <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </form>
 

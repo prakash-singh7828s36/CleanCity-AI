@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+﻿import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Recycle, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
@@ -6,15 +6,54 @@ import { Recycle, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { useRole } from "../contexts/RoleContext";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 const Login = () => {
   const nav = useNavigate();
+  const { setRole } = useRole();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const routeMap = {
+    citizen: "/app/citizen",
+    nigam: "/app/nigam",
+    driver: "/app/driver",
+    admin: "/app/admin",
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    nav("/app/citizen");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pw }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || "Login failed. Please try again.");
+        return;
+      }
+
+      const { token, user } = data;
+      localStorage.setItem("cleanCityToken", token);
+      localStorage.setItem("cleanCityUser", JSON.stringify(user));
+      localStorage.setItem("cleanCityRole", user.role);
+      setRole(user.role);
+      nav(routeMap[user.role] || "/app/citizen");
+    } catch (err) {
+      setError("Unable to login. Please check your connection.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -31,7 +70,6 @@ const Login = () => {
         </Link>
       </div>
 
-      {/* form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -85,11 +123,15 @@ const Login = () => {
                 </div>
               </div>
 
+              {error && <p className="text-sm text-red-500">{error}</p>}
+
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="w-full h-11 rounded-xl bg-gradient-to-r from-primary to-secondary shadow-lg"
               >
-                Sign in <ArrowRight className="ml-2 w-4 h-4" />
+                {isLoading ? "Signing in..." : "Sign in"}
+                <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </form>
 

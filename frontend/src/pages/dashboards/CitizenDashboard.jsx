@@ -7,6 +7,7 @@ import { StatCard } from "../../components/cleancity/StatCard";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
+import {WasteClassifier}from "../../components/cleancity/WasteClassifier";
 
 import { LEADERBOARD, MOCK_REPORTS } from "../../data/mockData";
 import { toast } from "sonner";
@@ -310,6 +311,8 @@ export default function CitizenDashboard() {
           ))}
         </div>
       </div>
+      <WasteClassifier/>
+
     </AppLayout>
   );
 }

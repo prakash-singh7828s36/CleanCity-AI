@@ -1,7 +1,7 @@
 // Roles
 export const ROLE_LABELS = {
   citizen: "Citizen",
-  nagarnigam: "Nagar Nigam",
+  nigam: "Nagar Nigam",
   driver: "Driver",
   admin: "Admin",
 };

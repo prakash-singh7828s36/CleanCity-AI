@@ -34,7 +34,7 @@ const ROLE_NAV = {
     { label: "Report", to: "/app/citizen/report", scrollId: "citizen-report", icon: MapPin },
     { label: "Leaderboard", to: "/app/citizen/leaderboard", scrollId: "citizen-leaderboard", icon: Trophy },
   ],
-  nagarnigam: [
+  nigam: [
     { label: "Overview", to: "/app/nigam", scrollId: "nigam-overview", icon: LayoutDashboard },
     { label: "Bins", to: "/app/nigam/bins", scrollId: "nigam-bins", icon: MapPin },
     { label: "Drivers", to: "/app/nigam/drivers", scrollId: "nigam-drivers", icon: Truck },
